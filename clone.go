@@ -4,7 +4,11 @@ import "os"
 import "fmt"
 
 func usage() {
-	fmt.Println("No bueno")
+	fmt.Println(`
+Usage:
+
+clone <git URI>      
+`)
 }
 
 func main() {

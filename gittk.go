@@ -1,7 +1,11 @@
 package main
 
-import "os"
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"os/user"
+	"path/filepath"
+)
 
 func printUsage() {
 	fmt.Println(`
@@ -31,7 +35,11 @@ func main() {
 			os.Exit(1)
 		}
 		repo := os.Args[2]
-		clone(repo)
+		projectDir := clone(repo)
+		if projectDir == "" {
+			fmt.Println("Unable to load project directory, try setting GITTK_PATH.")
+		}
+		fmt.Println(projectDir)
 	default:
 		fmt.Println("The given command is unknown.")
 		printUsage()
@@ -39,6 +47,19 @@ func main() {
 	}
 }
 
-func clone(repo string) {
-	fmt.Printf("TODO: clone %v\n", repo)
+func clone(repo string) string {
+	projectDir := os.Getenv("GITTK_PATH")
+
+	// Get the project directory
+	if projectDir == "" {
+		user, err := user.Current()
+		if err != nil {
+			return ""
+		}
+		projectDir = filepath.Join(user.HomeDir, "projects")
+	}
+
+	// Parse git URI to get subtree
+	fmt.Printf("TODO: clone %v into %v\n", repo, projectDir)
+	return projectDir
 }

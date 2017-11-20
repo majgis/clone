@@ -41,6 +41,7 @@ func main() {
 		if projectDir == "" {
 			fmt.Println("Unable to load project directory, try setting GITTK_PATH.")
 		}
+		os.MkdirAll(projectDir)
 		fmt.Println(projectDir)
 	default:
 		fmt.Println("The given command is unknown.")

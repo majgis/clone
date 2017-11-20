@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 )
 
 func printUsage() {
@@ -35,7 +37,7 @@ func main() {
 			os.Exit(1)
 		}
 		repo := os.Args[2]
-		projectDir := clone(repo)
+		projectDir := getProjectDir(repo)
 		if projectDir == "" {
 			fmt.Println("Unable to load project directory, try setting GITTK_PATH.")
 		}
@@ -47,7 +49,7 @@ func main() {
 	}
 }
 
-func clone(repo string) string {
+func getProjectDir(uri string) string {
 	projectDir := os.Getenv("GITTK_PATH")
 
 	// Get the project directory
@@ -60,6 +62,39 @@ func clone(repo string) string {
 	}
 
 	// Parse git URI to get subtree
-	fmt.Printf("TODO: clone %v into %v\n", repo, projectDir)
-	return projectDir
+	subDir, err := parseGitURI(uri)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	fullDir := filepath.Join(projectDir, subDir)
+	return fullDir
+}
+
+// git@github.com:majgis/gittk.git
+// https://github.com/majgis/gittk.git
+//
+func parseGitURI(uri string) (string, error) {
+	uriSplit := strings.Split(uri, "/")
+
+	// SSH
+	isGithubSSH := strings.HasPrefix(uri, "git@github.com")
+	if isGithubSSH {
+		userName := strings.Split(uriSplit[0], ":")[1]
+		projectName := strings.Split(uriSplit[1], ".")[0]
+		result := filepath.Join("github.com", userName, projectName)
+		return result, nil
+	}
+
+	// HTTPS
+	isGithubHTTPS := strings.HasPrefix(uri, "https://github.com")
+	if isGithubHTTPS {
+		userName := uriSplit[3]
+		projectName := strings.Split(uriSplit[4], ".")[0]
+		result := filepath.Join("github.com", userName, projectName)
+		return result, nil
+	}
+
+	// Unknown
+	return "", errors.New("unknown URI type")
 }

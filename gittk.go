@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strings"
@@ -36,14 +37,20 @@ func main() {
 			printUsage()
 			os.Exit(1)
 		}
-		repo := os.Args[2]
-		projectDir := getProjectDir(repo)
+		repoUri := os.Args[2]
+		projectDir := getProjectDir(repoUri)
 		if projectDir == "" {
 			fmt.Println("Unable to load project directory, try setting GITTK_PATH.")
 		}
 		err := os.MkdirAll(projectDir, os.ModePerm)
 		if err != nil {
 			fmt.Printf("Unable to create directory: %v", projectDir)
+			os.Exit(1)
+		}
+		os.Chdir(projectDir)
+		_, gitErr := exec.Command("git", "clone", repoUri, ".").Output()
+		if gitErr != nil {
+			fmt.Printf("Unable to clone repo\n %v", err)
 			os.Exit(1)
 		}
 		fmt.Println(projectDir)
@@ -78,7 +85,6 @@ func getProjectDir(uri string) string {
 
 // git@github.com:majgis/gittk.git
 // https://github.com/majgis/gittk.git
-//
 func parseGitURI(uri string) (string, error) {
 	uriSplit := strings.Split(uri, "/")
 

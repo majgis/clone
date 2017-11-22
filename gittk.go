@@ -49,7 +49,10 @@ func main() {
 		cmd := exec.Command("git", "clone", repoURI, ".")
 		cmd.Stderr = os.Stderr
 		cmd.Stdout = os.Stdout
-		cmd.Start()
+		startErr := cmd.Start()
+		if startErr != nil {
+			stderr.Fatal("Unable to execute git clone")
+		}
 		cmd.Wait()
 		fmt.Printf("\n%v\n", projectDir)
 	default:

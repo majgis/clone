@@ -16,6 +16,11 @@ Currently only supports github https and ssh URIs.
 
     $ gittk clone <GIT_URI>
 
+The default projects directory is `~/projects`.  You can change this default with the
+`GITTK_PATH` environment variable.
+
+    $ GITTK_PATH=~/go/src clone <GIT_URI>
+
 ## Example tree
 
     projects

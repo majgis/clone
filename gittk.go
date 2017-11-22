@@ -18,7 +18,7 @@ clone - Clone git repositories into consistent tree structure
         $ gittk clone <git URI>      
 `
 
-var stderr = log.New(os.Stderr, "", 0)
+var lg = log.New(os.Stderr, "", 0)
 
 func main() {
 
@@ -34,59 +34,66 @@ func main() {
 	switch command {
 	case "clone":
 		if len(os.Args) < 3 {
-			stderr.Fatalf("You must supply git URI to the clone command.\n%v", usage)
+			lg.Fatalf("You must supply git URI to the clone command.\n%v", usage)
 		}
 		repoURI := os.Args[2]
-		projectDir := getProjectDir(repoURI)
-		if projectDir == "" {
-			stderr.Fatalln("Unable to load project directory, try setting GITTK_PATH.")
-		}
-		err := os.MkdirAll(projectDir, os.ModePerm)
-		if err != nil {
-			stderr.Fatalf("Unable to create directory: %v", projectDir)
-		}
-		os.Chdir(projectDir)
-		cmd := exec.Command("git", "clone", repoURI, ".")
-		cmd.Stderr = os.Stderr
-		cmd.Stdout = os.Stdout
-		startErr := cmd.Start()
-		if startErr != nil {
-			stderr.Fatal("Unable to execute git clone")
-		}
-		cmd.Wait()
-		fmt.Printf("\n%v\n", projectDir)
+		clone(repoURI)
 	default:
-		stderr.Fatalf("The given command is unknown.\n%v", usage)
+		lg.Fatalf("The given command is unknown.\n%v", usage)
 	}
 }
 
-func getProjectDir(uri string) string {
-	projectDir := os.Getenv("GITTK_PATH")
+// Clone the given gitURI into GITTK_PATH
+func clone(repoURI string) {
+	repoDir := getRepoDir(repoURI)
+	if repoDir == "" {
+		lg.Fatalln("Unable to load project directory, try setting GITTK_PATH.")
+	}
+	err := os.MkdirAll(repoDir, os.ModePerm)
+	if err != nil {
+		lg.Fatalf("Unable to create directory: %v", repoDir)
+	}
+	os.Chdir(repoDir)
+	cmd := exec.Command("git", "clone", repoURI, ".")
+	cmd.Stderr = os.Stderr
+	cmd.Stdout = os.Stdout
+	startErr := cmd.Start()
+	if startErr != nil {
+		lg.Fatal("Unable to execute git clone")
+	}
+	cmd.Wait()
+	fmt.Printf("\n%v\n", repoDir)
+}
+
+// Get the repository directory from git URI
+func getRepoDir(uri string) string {
+	repoDir := os.Getenv("GITTK_PATH")
 
 	// Get the project directory
-	if projectDir == "" {
+	if repoDir == "" {
 		user, err := user.Current()
 		if err != nil {
 			return ""
 		}
-		projectDir = filepath.Join(user.HomeDir, "projects")
+		repoDir = filepath.Join(user.HomeDir, "projects")
 	}
 
 	// Parse git URI to get subtree
 	subDir, err := parseGitURI(uri)
 	if err != nil {
-		stderr.Fatalln(err)
+		lg.Fatalln(err)
 	}
-	fullDir := filepath.Join(projectDir, subDir)
+	fullDir := filepath.Join(repoDir, subDir)
 	return fullDir
 }
 
+// Return subdirectory from different git URI types
 // git@github.com:majgis/gittk.git
 // https://github.com/majgis/gittk.git
 func parseGitURI(uri string) (string, error) {
 	uriSplit := strings.Split(uri, "/")
 
-	// SSH
+	// github SSH
 	isGithubSSH := strings.HasPrefix(uri, "git@github.com")
 	if isGithubSSH {
 		userName := strings.Split(uriSplit[0], ":")[1]
@@ -95,7 +102,7 @@ func parseGitURI(uri string) (string, error) {
 		return result, nil
 	}
 
-	// HTTPS
+	// github HTTPS
 	isGithubHTTPS := strings.HasPrefix(uri, "https://github.com")
 	if isGithubHTTPS {
 		userName := uriSplit[3]

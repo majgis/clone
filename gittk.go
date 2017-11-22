@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"os/user"
@@ -10,20 +11,20 @@ import (
 	"strings"
 )
 
-func printUsage() {
-	fmt.Println(`
+const usage = `
 Commands:
 
 clone - Clone git repositories into consistent tree structure
         $ gittk clone <git URI>      
-`)
-}
+`
+
+var stderr = log.New(os.Stderr, "", 0)
 
 func main() {
 
 	// Print usage if no command was given
 	if len(os.Args) == 1 {
-		printUsage()
+		fmt.Print(usage)
 		os.Exit(0)
 	}
 
@@ -33,31 +34,26 @@ func main() {
 	switch command {
 	case "clone":
 		if len(os.Args) < 3 {
-			fmt.Println("You must supply git URI to the clone command.")
-			printUsage()
-			os.Exit(1)
+			stderr.Fatalf("You must supply git URI to the clone command.\n%v", usage)
 		}
-		repoUri := os.Args[2]
-		projectDir := getProjectDir(repoUri)
+		repoURI := os.Args[2]
+		projectDir := getProjectDir(repoURI)
 		if projectDir == "" {
-			fmt.Println("Unable to load project directory, try setting GITTK_PATH.")
+			stderr.Fatalln("Unable to load project directory, try setting GITTK_PATH.")
 		}
 		err := os.MkdirAll(projectDir, os.ModePerm)
 		if err != nil {
-			fmt.Printf("Unable to create directory: %v", projectDir)
-			os.Exit(1)
+			stderr.Fatalf("Unable to create directory: %v", projectDir)
 		}
 		os.Chdir(projectDir)
-		_, gitErr := exec.Command("git", "clone", repoUri, ".").Output()
-		if gitErr != nil {
-			fmt.Printf("Unable to clone repo\n %v", err)
-			os.Exit(1)
-		}
-		fmt.Println(projectDir)
+		cmd := exec.Command("git", "clone", repoURI, ".")
+		cmd.Stderr = os.Stderr
+		cmd.Stdout = os.Stdout
+		cmd.Start()
+		cmd.Wait()
+		fmt.Printf("\n%v\n", projectDir)
 	default:
-		fmt.Println("The given command is unknown.")
-		printUsage()
-		os.Exit(1)
+		stderr.Fatalf("The given command is unknown.\n%v", usage)
 	}
 }
 
@@ -76,8 +72,7 @@ func getProjectDir(uri string) string {
 	// Parse git URI to get subtree
 	subDir, err := parseGitURI(uri)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		stderr.Fatalln(err)
 	}
 	fullDir := filepath.Join(projectDir, subDir)
 	return fullDir

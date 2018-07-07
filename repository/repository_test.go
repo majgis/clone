@@ -17,7 +17,7 @@ func TestGetSubDir(t *testing.T) {
 	}
 }
 
-func TestGetDir(t *testing.T) {
+func TestGetDirGithubHTTPS(t *testing.T) {
 	actual, err := GetDir("https://github.com/majgis/gittk.git")
 	if err != nil {
 		t.Fatalf("Error when getting directory: %v", err)
@@ -29,6 +29,91 @@ func TestGetDir(t *testing.T) {
 	}
 
 	expected := filepath.Join(user.HomeDir, "projects", "github.com", "majgis", "gittk")
+	if actual != expected {
+		t.Fatalf("'%v' does not equal '%v'", actual, expected)
+	}
+}
+
+func TestGetDirGithubHTTPSWithUser(t *testing.T) {
+	actual, err := GetDir("https://user@github.com/majgis/gittk.git")
+	if err != nil {
+		t.Fatalf("Error when getting directory: %v", err)
+	}
+
+	user, usrErr := user.Current()
+	if usrErr != nil {
+		t.Fatalf("Error retrieving user: %v", usrErr)
+	}
+
+	expected := filepath.Join(user.HomeDir, "projects", "github.com", "majgis", "gittk")
+	if actual != expected {
+		t.Fatalf("'%v' does not equal '%v'", actual, expected)
+	}
+}
+
+func TestGetDirGithubSSH(t *testing.T) {
+	actual, err := GetDir("git@github.com:majgis/gittk.git")
+	if err != nil {
+		t.Fatalf("Error when getting directory: %v", err)
+	}
+
+	user, usrErr := user.Current()
+	if usrErr != nil {
+		t.Fatalf("Error retrieving user: %v", usrErr)
+	}
+
+	expected := filepath.Join(user.HomeDir, "projects", "github.com", "majgis", "gittk")
+	if actual != expected {
+		t.Fatalf("'%v' does not equal '%v'", actual, expected)
+	}
+}
+
+func TestGetDirBitbucketServerHTTPS(t *testing.T) {
+	actual, err := GetDir("https://git.somewhere.com/scm/teamid/appname.git")
+	if err != nil {
+		t.Fatalf("Error when getting directory: %v", err)
+	}
+
+	user, usrErr := user.Current()
+	if usrErr != nil {
+		t.Fatalf("Error retrieving user: %v", usrErr)
+	}
+
+	expected := filepath.Join(user.HomeDir, "projects", "git.somewhere.com", "teamid", "appname")
+	if actual != expected {
+		t.Fatalf("'%v' does not equal '%v'", actual, expected)
+	}
+}
+
+func TestGetDirBitbucketServerHTTPSWithUser(t *testing.T) {
+	actual, err := GetDir("https://user@git.somewhere.com/scm/teamid/appname.git")
+	if err != nil {
+		t.Fatalf("Error when getting directory: %v", err)
+	}
+
+	user, usrErr := user.Current()
+	if usrErr != nil {
+		t.Fatalf("Error retrieving user: %v", usrErr)
+	}
+
+	expected := filepath.Join(user.HomeDir, "projects", "git.somewhere.com", "teamid", "appname")
+	if actual != expected {
+		t.Fatalf("'%v' does not equal '%v'", actual, expected)
+	}
+}
+
+func TestGetDirBitbucketServerSSH(t *testing.T) {
+	actual, err := GetDir("ssh://git@git.somewhere.com:1111/teamid/appname.git")
+	if err != nil {
+		t.Fatalf("Error when getting directory: %v", err)
+	}
+
+	user, usrErr := user.Current()
+	if usrErr != nil {
+		t.Fatalf("Error retrieving user: %v", usrErr)
+	}
+
+	expected := filepath.Join(user.HomeDir, "projects", "git.somewhere.com", "teamid", "appname")
 	if actual != expected {
 		t.Fatalf("'%v' does not equal '%v'", actual, expected)
 	}

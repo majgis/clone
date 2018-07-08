@@ -33,8 +33,8 @@ func Clone(repoURI string, exportBashOnly bool) (string, error) {
 		return repoDir, nil
 	}
 	bash := fmt.Sprintf(`mkdir -p %v \
-    && cd %v \
-    && git clone %v %v`, repoDir, repoDir, repoURI, repoDir)
+	&& cd %v \
+	&& git clone %v %v`, repoDir, repoDir, repoURI, repoDir)
 	return bash, nil
 }
 

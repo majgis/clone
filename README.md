@@ -21,6 +21,29 @@ The default projects directory is `~/projects`.  You can change this default wit
 
     $ GITTK_PATH=~/go/src clone <GIT_URI>
 
+### -bash option
+
+A boolean option to not execute operations, only write bash commands to STDOUT.
+
+The motivation for outputing bash is to enable automatically
+changing directory to the cloned repository.
+
+To accomplish this task, use the following alias:
+
+    alias gittk=eval "$(/usr/local/bin/gittk -bash $@)"
+
+To alias only the clone command, use this alias:
+
+    alias clone=eval "$(/usr/local/bin/gittk -bash clone $@)"
+
+Example of bash commands output:
+
+    $ gittk clone https://github.com/majgis/ngify.git
+
+    mkdir -p /home/mjackson/projects/github.com/majgis/ngify \
+        && cd /home/mjackson/projects/github.com/majgis/ngify \
+        && git clone https://github.com/majgis/ngify.git
+
 ## Example tree
 
     projects

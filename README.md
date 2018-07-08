@@ -28,13 +28,18 @@ A boolean option to not execute operations, only write bash commands to STDOUT.
 The motivation for outputing bash is to enable automatically
 changing directory to the cloned repository.
 
-To accomplish this task, use the following alias:
+To accomplish this task, use the following function:
 
-    alias gittk=eval "$(/usr/local/bin/gittk -bash $@)"
+    gittk(){
+        eval "$(/usr/local/bin/gittk -bash $@)"
+    }
 
-To alias only the clone command, use this alias:
 
-    alias clone=eval "$(/usr/local/bin/gittk -bash clone $@)"
+To use only the clone command, use this function:
+
+    clone(){
+        eval "$(/usr/local/bin/gittk -bash clone $@)"
+    }
 
 Example of bash commands output:
 

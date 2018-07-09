@@ -43,7 +43,7 @@ To use only the clone command, use this function:
 
 Example of bash commands output:
 
-    $ gittk clone https://github.com/majgis/ngify.git
+    $ gittk -bash clone https://github.com/majgis/ngify.git
 
     mkdir -p /home/mjackson/projects/github.com/majgis/ngify \
         && cd /home/mjackson/projects/github.com/majgis/ngify \
